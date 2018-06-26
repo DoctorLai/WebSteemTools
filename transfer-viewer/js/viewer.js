@@ -1,7 +1,12 @@
-
+// require jquery loaded
 $(document).ready(function() {    
+  // set default steem node
+  steem.api.setOptions({ url: "https://api.steemit.com" });
+  
+  // set running status = false
   var running = false;
-  sorttable.makeSortable(document.getElementById("dvlist"));
+
+  // update UI progress
   function updateProgress(p) {
       if (p < 0) p = 0;
       if (p > 100) p = 100;
@@ -10,19 +15,20 @@ $(document).ready(function() {
       dom.html(p + '%');
   }
   
+  // print message to console div
   function log(msg) {
     var t = $('#console').val();
     var ccc = $('#console');  
     ccc.val(t + "\n" + msg);
     ccc.scrollTop(ccc[0].scrollHeight);     
-  }
-  steem.api.setOptions({ url: "https://api.steemit.com" });
+  }  
   
+  // return a URL for given Steem ID
   function steem_url(id) {
     return "<a target=_blank rel=nofollow href='https://steemit.com/@" + id + "'>@" + id + "</a>";
   }
   
-
+  // scan account history for transfer records
   function getHistory(account, total, from, limit, unit, type, dir) {
     if (from < limit) {
       limit = from;
@@ -39,11 +45,12 @@ $(document).ready(function() {
         var op_type = op[0];
         var op_value = op[1];
   
-            if (running == false) return;
+        if (running == false) return;
         var timestamp = tx[1].timestamp;
                           
         if ((op_type == "transfer") && (op_value.to == account || op_value.from == account)) {              
   
+            // filtering
             var thememo = op[1].memo;
             if (type == 1) {
                 if (thememo.startsWith('#')) {
@@ -109,6 +116,7 @@ $(document).ready(function() {
             
             var theunit = op[1].amount.split(' ')[1];
              
+            // check if unit matches
             if ((theunit == unit) || (unit == '')) {
               log(tx[1].timestamp + ": @" + op[1].from + " sends " + op[1].amount + " to @" + op_value.to);// + " memo = " + op[1].memo);
               
@@ -153,6 +161,8 @@ $(document).ready(function() {
         getHistory(account, opCount, opCount, 1000, unit, type, dir);
     });
   }  
+  
+  // when run button is clicked
   $('input#run').click(function() {
     steem.api.setOptions({ url: $('select#nodes').val() });
     var acc = $('#steemid').val().trim().toLowerCase();
